@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { Table } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
@@ -7,39 +7,36 @@ import {} from "jquery.cookie";
 axios.defaults.withCredentials = true;
 const headers = { withCredentials: true };
 
-class BoardRow extends Component {
-  render() {
+function BoardRow(props){
     return (
       <tr>
         <td>
           <NavLink
-            to={{ pathname: "/board/detail", query: { _id: this.props._id } }}
+            to={{ pathname: "/board/detail", query: { _id: props._id } }}
           >
-            {this.props.createdAt.substring(0, 10)}
+            {props.createdAt.substring(0, 10)}
           </NavLink>
         </td>
         <td>
           <NavLink
-            to={{ pathname: "/board/detail", query: { _id: this.props._id } }}
+            to={{ pathname: "/board/detail", query: { _id: props._id } }}
           >
-            {this.props.title}
+            {props.title}
           </NavLink>
         </td>
       </tr>
     );
-  }
 }
 
-class BoardForm extends Component {
-  state = {
-    boardList: []
-  };
+function BoardForm(props){
 
-  componentDidMount() {
-    this.getBoardList();
-  }
+  const [boardList, setBoardList] = useState();
 
-  getBoardList = () => {
+  useEffect(()=>{
+    getBoardList();
+  },[]);
+
+  const getBoardList = () => {
     const send_param = {
       headers,
       _id: $.cookie("login_id")
@@ -47,11 +44,10 @@ class BoardForm extends Component {
     axios
       .post("http://localhost:8080/board/getBoardList", send_param)
       .then(returnData => {
-        let boardList;
         if (returnData.data.list.length > 0) {
           // console.log(returnData.data.list.length);
           const boards = returnData.data.list;
-          boardList = boards.map(item => (
+          const boardContents = boards.map(item => (
             <BoardRow
               key={Date.now() + Math.random() * 500}
               _id={item._id}
@@ -60,18 +56,14 @@ class BoardForm extends Component {
             ></BoardRow>
           ));
           // console.log(boardList);
-          this.setState({
-            boardList: boardList
-          });
+          setBoardList(boardContents);
         } else {
-          boardList = (
+          const boardList = (
             <tr>
               <td colSpan="2">작성한 게시글이 존재하지 않습니다.</td>
             </tr>
           );
-          this.setState({
-            boardList: boardList
-          });
+          setBoardList(boardList);
           // window.location.reload();
         }
       })
@@ -80,27 +72,25 @@ class BoardForm extends Component {
       });
   };
 
-  render() {
     const divStyle = {
       margin: 50
     };
 
-    return (
-      <div>
-        <div style={divStyle}>
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>날짜</th>
-                <th>글 제목</th>
-              </tr>
-            </thead>
-            <tbody>{this.state.boardList}</tbody>
-          </Table>
-        </div>
+  return (
+    <div>
+      <div style={divStyle}>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>날짜</th>
+              <th>글 제목</th>
+            </tr>
+          </thead>
+          <tbody>{boardList}</tbody>
+        </Table>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default BoardForm;

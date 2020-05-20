@@ -1,28 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+const path = require("path");
 const Board = require("../schemas/board");
 
 let storage = multer.diskStorage({
-  destination: function(req, file, callback) {
+  destination: function (req, file, callback) {
     callback(null, "public/upload/");
   },
-  filename: function(req, file, callback) {
+  filename: function (req, file, callback) {
     let extension = path.extname(file.originalname);
     let basename = path.basename(file.originalname, extension);
     callback(null, Date.now() + extension);
-  }
+  },
 });
 
 const upload = multer({
   dest: "public/upload/",
-  storage: storage
+  storage: storage,
 });
 
 router.post("/delete", async (req, res) => {
   try {
     await Board.remove({
-      _id: req.body._id
+      _id: req.body._id,
     });
     res.json({ message: true });
   } catch (err) {
@@ -31,18 +32,36 @@ router.post("/delete", async (req, res) => {
   }
 });
 
-router.post("/update", async (req, res) => {
+router.post("/update", upload.single("imgFile"), async (req, res) => {
   try {
-    await Board.update(
-      { _id: req.body._id },
-      {
-        $set: {
-          writer: req.body.writer,
-          title: req.body.title,
-          content: req.body.content
+    const file = req.file;
+    console.log(file);
+
+    if (file == undefined) {
+      await Board.update(
+        { _id: req.body.boardId },
+        {
+          $set: {
+            writer: req.body._id,
+            title: req.body.title,
+            content: req.body.content,
+          },
         }
-      }
-    );
+      );
+    } else {
+      await Board.update(
+        { _id: req.body.boardId },
+        {
+          $set: {
+            writer: req.body._id,
+            title: req.body.title,
+            content: req.body.content,
+            imgPath: file.filename,
+          },
+        }
+      );
+    }
+
     res.json({ message: "게시글이 수정 되었습니다." });
   } catch (err) {
     console.log(err);
@@ -60,14 +79,14 @@ router.post("/write", upload.single("imgFile"), async (req, res) => {
       obj = {
         writer: req.body._id,
         title: req.body.title,
-        content: req.body.content
+        content: req.body.content,
       };
     } else {
       obj = {
         writer: req.body._id,
         title: req.body.title,
         content: req.body.content,
-        imgPath: file.filename
+        imgPath: file.filename,
       };
     }
 
@@ -84,7 +103,7 @@ router.post("/getBoardList", async (req, res) => {
   try {
     const _id = req.body._id;
     const board = await Board.find({ writer: _id }, null, {
-      sort: { createdAt: -1 }
+      sort: { createdAt: -1 },
     });
     res.json({ list: board });
   } catch (err) {

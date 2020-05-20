@@ -1,24 +1,26 @@
-import React, { Component } from "react";
-import { Table, Button } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Image } from "react-bootstrap";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
 axios.defaults.withCredentials = true;
 const headers = { withCredentials: true };
+function BoardDetail(props){
 
-class BoardDetail extends Component {
-  state = {
-    board: []
-  };
+  const [board, setBoard] = useState();
 
-  componentDidMount() {
-    if (this.props.location.query !== undefined) {
-      this.getDetail();
+  useEffect(()=>{
+    setBoardDetail();
+  },[]);
+
+  const setBoardDetail=()=>{
+    if (props.location.query !== undefined) {
+      getDetail();
     } else {
       window.location.href = "/";
     }
-  }
+  };
 
-  deleteBoard = _id => {
+  const deleteBoard = _id => {
     const send_param = {
       headers,
       _id
@@ -39,10 +41,10 @@ class BoardDetail extends Component {
     }
   };
 
-  getDetail = () => {
+  const getDetail = () => {
     const send_param = {
       headers,
-      _id: this.props.location.query._id
+      _id: props.location.query._id
     };
     const marginBottom = {
       marginBottom: 5
@@ -54,6 +56,7 @@ class BoardDetail extends Component {
         if (returnData.data.board[0]) {
           const board = (
             <div>
+              <Image src={process.env.REACT_APP_URL + returnData.data.board[0].imgPath} fluid />
               <Table striped bordered hover>
                 <thead>
                   <tr>
@@ -62,11 +65,7 @@ class BoardDetail extends Component {
                 </thead>
                 <tbody>
                   <tr>
-                    <td
-                      dangerouslySetInnerHTML={{
-                        __html: returnData.data.board[0].content
-                      }}
-                    ></td>
+                    <td>{returnData.data.board[0].content}</td>
                   </tr>
                 </tbody>
               </Table>
@@ -77,7 +76,7 @@ class BoardDetail extends Component {
                     query: {
                       title: returnData.data.board[0].title,
                       content: returnData.data.board[0].content,
-                      _id: this.props.location.query._id
+                      _id: props.location.query._id
                     }
                   }}
                 >
@@ -87,9 +86,9 @@ class BoardDetail extends Component {
                 </NavLink>
                 <Button
                   block
-                  onClick={this.deleteBoard.bind(
+                  onClick={deleteBoard.bind(
                     null,
-                    this.props.location.query._id
+                    props.location.query._id
                   )}
                 >
                   글 삭제
@@ -97,9 +96,7 @@ class BoardDetail extends Component {
               </div>
             </div>
           );
-          this.setState({
-            board: board
-          });
+          setBoard(board);
         } else {
           alert("글 상세 조회 실패");
         }
@@ -111,12 +108,11 @@ class BoardDetail extends Component {
   };
 
   //onClick={this.getBoard.bind(null,this.props._id)}
-  render() {
     const divStyle = {
       margin: 50
     };
-    return <div style={divStyle}>{this.state.board}</div>;
-  }
+    return <div style={divStyle}>{board}</div>;
+  
 }
 
 export default BoardDetail;

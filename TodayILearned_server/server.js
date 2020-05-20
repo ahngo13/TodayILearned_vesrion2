@@ -2,14 +2,33 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
+const fs = require("fs");
+const path = require("path");
 const connect = require("./schemas");
 
 connect();
 
 const corsOptions = {
   origin: true,
-  credentials: true
+  credentials: true,
 };
+
+app.use(express.static(path.join(__dirname, "public")));
+
+fs.readdir("public", (error) => {
+  // public 폴더 없으면 생성
+  if (error) {
+    fs.mkdirSync("public");
+    console.log("pulic 폴더 생성됨");
+    fs.readdir("public/upload", (error) => {
+      // uploads 폴더 없으면 생성
+      if (error) {
+        fs.mkdirSync("public/upload");
+        console.log("upload 폴더 생성됨");
+      }
+    });
+  }
+});
 
 app.use(
   session({
@@ -18,8 +37,8 @@ app.use(
     secret: "hamletshu",
     cookie: {
       httpOnly: true,
-      secure: false
-    }
+      secure: false,
+    },
   })
 );
 

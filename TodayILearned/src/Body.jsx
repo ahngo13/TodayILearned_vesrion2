@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import LoginForm from "./LoginForm";
 import BoardForm from "./BoardForm";
 import BoardWriteForm from "./BoardWriteForm";
@@ -8,8 +8,8 @@ import { Route } from "react-router-dom";
 import $ from "jquery";
 import {} from "jquery.cookie";
 
-class Body extends Component {
-  render() {
+function Body(){
+
     let resultForm;
     function getResultForm() {
       // console.log($.cookie("login_id"));
@@ -31,6 +31,6 @@ class Body extends Component {
       </div>
     );
   }
-}
+
 
 export default Body;
